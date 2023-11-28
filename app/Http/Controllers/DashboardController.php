@@ -21,6 +21,7 @@ class DashboardController extends Controller
 
     }
     function permohonan() {
+       
         $uid = Auth::user()->id;
         $permohonans = Permohonan::where("user_id",$uid)->orderBy('id','desc')->get();
 
@@ -70,7 +71,7 @@ class DashboardController extends Controller
 
         $data = $validatedData;
         $key = $data['nama_usaha'];
-
+        
         // Awalan LINK sebelum di restrict $PDKI_URL = "https://pdki-indonesia-api.dgip.go.id/api/trademark/search?keyword=$key&page=1&type=trademark&order_state=asc";
         $PDKI_URL = "https://pdki-indonesia-api.dgip.go.id/api/trademark/search2?keyword=" . urlencode($key) . "&page=1&type=trademark&order_state=asc";
         $currentTime = now();
@@ -92,17 +93,23 @@ class DashboardController extends Controller
         $found = false;
         $similarity = [];
         $mereks = [];
-        foreach($out as $hit) {
-        $key2 = strtolower($hit->_source->nama_merek);
-            if (strtolower($key) == $key2) {
-            $found = true;
-            $similarity[] = 100;
-            $mereks[] = $key2;
-        }
-        $max_length = max(strlen($key), strlen($key2));
-        $similarity[] = ((($max_length) - (levenshtein($key,$key2))) / $max_length) * 100;
-        $mereks[] = $key2;
+        foreach ($out as $hit) {
+            if ($hit->_source->status_permohonan == "(TM) Didaftar") {
+                $key2 = strtolower($hit->_source->nama_merek);
+                
+                // Check if $key matches $key2
+                if (strtolower($key) == $key2) {
+                    $found = true;
+                    $similarity[] = 100;
+                    $mereks[] = $key2;
+                }
         
+                // Levenshtein similarity calculation using similar_text
+                $percent = null;
+                similar_text(strtolower($key), $key2, $percent);
+                $similarity[] = $percent;
+                $mereks[] = $key2;    
+            }
         }
         // dd($out,$found);   
         $output = (object)[];
@@ -130,7 +137,6 @@ class DashboardController extends Controller
             });
             $limit = 3;
             $cur = 0;
-      
             foreach ($merekobject as $merek) {
                 if($cur == $limit) {
                     break;
@@ -202,7 +208,7 @@ class DashboardController extends Controller
         }
         $permohonan->status ="Dalam Proses";
         // $data['user_id'] = Auth::user()->id;
-
+        dd($permohonan);
         $permohonan->save();
 
         return redirect("/permohonan")->with([ 'alert' => "Sukses merubah permohonan merek"]);;
