@@ -8,4 +8,5 @@
 </p>
 
 ## Tampilan Webnya (User page) Bisa dicek :
-<a href="https://sistemmerek.uniantara.id"><img src="https://i.ibb.co/7gYkcDc/image.png" alt="Web Sistem Merek SW PTIK"></a>
+<p align="center"><a href="https://sistemmerek.uniantara.id"><img src="https://i.ibb.co/7gYkcDc/image.png" width="800" alt="Web Sistem Merek SW PTIK"></a></p>
+
